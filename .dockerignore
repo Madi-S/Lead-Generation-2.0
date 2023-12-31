@@ -1,6 +1,0 @@
-env
-.dockerignore
-.gitignore
-README.md
-Dockerfile
-LICENSE
