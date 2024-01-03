@@ -24,9 +24,9 @@ class CsvWriter:
             writer = csv.DictWriter(f, fieldnames=self.fieldnames)
             writer.writeheader()
 
-    def append(self, data: dict) -> None:
+    def append(self, data: list[dict]) -> None:
         '''
-        `data: dict` - data to write, keys of this dictionary should match fieldnames
+        `data: list[dict]` - data to write, keys of this dictionary should match fieldnames
         
         Appends incoming `data` to the csv file
         '''
