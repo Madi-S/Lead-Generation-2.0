@@ -34,7 +34,7 @@ class GoogleMapsEngine(BaseEngine, PlaywrightEngineConfig, AbstractEngine):
     FIELD_NAMES = ['Title', 'Address', 'PhoneNumber', 'WebsiteURL']
 
     SLEEP_PER_SCROLL_S = 4
-    SCROLL_TIME_DURATION_S = 10
+    SCROLL_TIME_DURATION_S = 100
 
     def __init__(self, query: str, location: str, zoom: int | float = 12) -> None:
         '''
