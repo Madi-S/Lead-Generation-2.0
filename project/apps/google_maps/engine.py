@@ -1,21 +1,19 @@
 import time
 import asyncio
 from bs4 import BeautifulSoup
-from playwright.async_api import Playwright, Browser, Page, BrowserType, ElementHandle, async_playwright
+from playwright.async_api import Playwright, async_playwright
 
-from utils import get_coords_by_location
-from writer import CsvWriter
+from apps.misc.utils import get_coords_by_location
+from apps.engines.base import BaseEngine
+from apps.engines.abstract import AbstractEngine
+from apps.engines.playwright_config import PlaywrightEngineConfig
 
 
-class GoogleMapsEngine:
+class GoogleMapsEngine(BaseEngine, PlaywrightEngineConfig, AbstractEngine):
     '''
-    GoogleMapsEngine
+    `GoogleMapsEngine`
 
     [CONSTANT] `BASE_URL` - base url for google maps website with substitute search query, coordinates and zoom 
-
-    [EDITABLE] `BROWSER_PARAMS` - chromiun browser parameters configuration from playwright, additional parameters can be set if needed
-
-    [EDITABLE] `PAGE_PARAMS` - browser page parameters configuration from playwright, additional parameters can be set if needed
 
     [EDITABLE] `SCROLL_TIME_DURATION_S` - scroll time duration to view the search results, preferably should be not less than 100, for testing purposes can be decreased
 
@@ -33,11 +31,10 @@ class GoogleMapsEngine:
 
     '''
     BASE_URL = 'https://www.google.com/maps/search/{query}/@{coords},{zoom}z/data=!3m1!4b1?entry=ttu'
-    BROWSER_PARAMS = {'headless': False, 'proxy': None, 'slow_mo': 150}
-    PAGE_PARAMS = {'java_script_enabled': True, 'bypass_csp': True}
-    SCROLL_TIME_DURATION_S = 10
-    SLEEP_PER_SCROLL_S = 4
     FIELD_NAMES = ['Title', 'Address', 'PhoneNumber', 'WebsiteURL']
+
+    SLEEP_PER_SCROLL_S = 4
+    SCROLL_TIME_DURATION_S = 10
 
     def __init__(self, query: str, location: str, zoom: int | float = 12) -> None:
         '''
@@ -76,61 +73,6 @@ class GoogleMapsEngine:
             urls: list[str] = await self._get_search_results_urls()
             self._entries: list[dict] = await self._get_search_results_entries(urls)
             await self.browser.close()
-
-    async def save_to_csv(self, filename: str = 'google_maps_leads.csv') -> None:
-        '''
-        `filename: str='google_maps_leads.csv'` filename to save entries in, must be .csv filename
-
-        If file with such name already exists, it will not overwrite it but append newly found entries to existing ones
-
-        If file with such name does not exist, it will create a new csv file with predetermined fieldnames
-        '''
-        if not filename.endswith('.csv'):
-            raise ValueError('Use .csv file extension')
-        if not self._entries:
-            raise NotImplementedError(
-                'Entries are empty, call .run() method first to save them'
-            )
-        csv_writer = CsvWriter(filename, self.FIELD_NAMES)
-        csv_writer.append(self._entries)
-
-    @property
-    def entries(self) -> list[dict]:
-        '''
-        Returns `list[dict]` typed entries once `.run()` method was called
-        '''
-        if not self._entries:
-            raise NotImplementedError(
-                'Entries are empty, call .run() method first to create them'
-            )
-        return self._entries
-
-    @entries.setter
-    def entries(self, _) -> None:
-        '''
-        You cannot do that ;)
-
-        Made for durability reasons
-        '''
-        raise ValueError('Cannot set value to data. This is not allowed')
-
-    async def _setup_browser(self) -> None:
-        '''
-        Sets up the browser by initializing `playwright.chromiun` and `Browser` along with `Page` after
-        '''
-        chromium: BrowserType = self.playwright.chromium
-        self.browser: Browser = await chromium.launch(**self.BROWSER_PARAMS)
-        self.page: Page = await self.browser.new_page(**self.PAGE_PARAMS)
-
-    async def _open_url_and_wait(self, url: str, sleep_duration_s: int = 3) -> None:
-        '''
-        `url: str` - url to open
-        `sleep_duration_s: int = 3` - amount of seconds to wait for the page to load before any operations on that page
-
-        Navigates to initialized `self.url` and waits for `sleep_duration_s` seconds
-        '''
-        await self.page.goto(url)
-        await asyncio.sleep(sleep_duration_s)
 
     async def _get_search_results_urls(self) -> list[str]:
         '''
