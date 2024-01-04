@@ -1,9 +1,36 @@
 import asyncio
+from playwright.async_api import Playwright, async_playwright
 
 from apps.misc.writer import CsvWriter
+from apps.engines.playwright_config import PlaywrightEngineConfig
 
 
-class BaseEngine:
+class BaseEngine(PlaywrightEngineConfig):
+    '''
+    `BaseEngine`
+
+    Base engine class expressing methods, which are shared between all engines, does not provide implementation of `AbstractEngine` methods
+    '''
+    async def run(self) -> None:
+        '''
+        Uses headles webdriver powered by Playwright
+
+        Creates a web url based on initialized parameters
+
+        Parses results by given query and url one by one
+
+        Assigns collected results to `.entries`
+
+        To save the results call `.save_to_csv()` method after       
+        '''
+        async with async_playwright() as playwright:
+            self.playwright: Playwright = playwright
+            await self._setup_browser()
+            await self._open_url_and_wait(self.url)
+            urls: list[str] = await self._get_search_results_urls()
+            self._entries: list[dict] = await self._get_search_results_entries(urls)
+            await self.browser.close()
+
     def save_to_csv(self, filename: str = 'google_maps_leads.csv') -> None:
         '''
         `filename: str='google_maps_leads.csv'` filename to save entries in, must be .csv filename

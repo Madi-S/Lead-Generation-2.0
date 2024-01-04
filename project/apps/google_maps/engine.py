@@ -1,23 +1,19 @@
 import time
 import asyncio
 from bs4 import BeautifulSoup
-from playwright.async_api import Playwright, async_playwright
 
-from apps.misc.utils import get_coords_by_location
 from apps.engines.base import BaseEngine
 from apps.engines.abstract import AbstractEngine
-from apps.engines.playwright_config import PlaywrightEngineConfig
+from apps.misc.utils import get_coords_by_location
 
 
-class GoogleMapsEngine(BaseEngine, PlaywrightEngineConfig, AbstractEngine):
+class GoogleMapsEngine(BaseEngine, AbstractEngine):
     '''
     `GoogleMapsEngine`
 
-    [CONSTANT] `BASE_URL` - base url for google maps website with substitute search query, coordinates and zoom 
-
     [EDITABLE] `SCROLL_TIME_DURATION_S` - scroll time duration to view the search results, preferably should be not less than 100, for testing purposes can be decreased
 
-    [CONSTANT] `FIELD_NAMES` - field names of scraped data, extracts data entries to csv file based on these field names
+    [EDITABLE] `SLEEP_PER_SCROLL_S` - amount of seconds to wait before each scroll of search results so that google maps does not output endless loading ~ aka simulate human-like activity
 
     Usage:
 
@@ -53,26 +49,6 @@ class GoogleMapsEngine(BaseEngine, PlaywrightEngineConfig, AbstractEngine):
         self.url = self.BASE_URL.format(
             query=self.search_query, coords=','.join(self.coords), zoom=self.zoom
         )
-
-    async def run(self) -> None:
-        '''
-        Uses headles webdriver powered by Playwright
-
-        Creates a web url based on initialized parameters
-
-        Parses results by given query and url one by one
-
-        Assigns collected results to `.entries`
-
-        To save the results call `.save_to_csv()` method after       
-        '''
-        async with async_playwright() as playwright:
-            self.playwright: Playwright = playwright
-            await self._setup_browser()
-            await self._open_url_and_wait(self.url)
-            urls: list[str] = await self._get_search_results_urls()
-            self._entries: list[dict] = await self._get_search_results_entries(urls)
-            await self.browser.close()
 
     async def _get_search_results_urls(self) -> list[str]:
         '''
@@ -152,9 +128,10 @@ class GoogleMapsEngine(BaseEngine, PlaywrightEngineConfig, AbstractEngine):
             Returns `list[dict]` typed parsed data - `[title, addr, phone, website]`
             '''
             soup = BeautifulSoup(html, 'html.parser')
+            data = []
 
             title = soup.select_one('.DUwDvf.lfPIob').get_text()
-            data = [title, ]
+            data.append(title)
 
             addr_img_src = '//www.gstatic.com/images/icons/material/system_gm/2x/place_gm_blue_24dp.png'
             phone_img_src = '//www.gstatic.com/images/icons/material/system_gm/2x/phone_gm_blue_24dp.png'
@@ -170,9 +147,10 @@ class GoogleMapsEngine(BaseEngine, PlaywrightEngineConfig, AbstractEngine):
 
         entries = []
         for url in urls:
-            await self._open_url_and_wait(url)
+            await self._open_url_and_wait(url, 1.5)
             html = await self.page.content()
             data = parse_data_with_soup(html)
-            entries.append(dict(zip(self.FIELD_NAMES, data)))
+            entry = dict(zip(self.FIELD_NAMES, data))
+            entries.append(entry)
 
         return entries
