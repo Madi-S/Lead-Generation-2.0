@@ -1,5 +1,5 @@
 # Extracted data results
-.csv
+*.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
