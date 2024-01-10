@@ -29,8 +29,8 @@ class GoogleMapsEngine(BaseEngine, AbstractEngine):
     BASE_URL = 'https://www.google.com/maps/search/{query}/@{coords},{zoom}z/data=!3m1!4b1?entry=ttu'
     FIELD_NAMES = ['Title', 'Address', 'PhoneNumber', 'WebsiteURL']
 
-    SLEEP_PER_SCROLL_S = 4
-    SCROLL_TIME_DURATION_S = 100
+    SLEEP_PER_SCROLL_S = 5
+    SCROLL_TIME_DURATION_S = 300
 
     def __init__(self, query: str, location: str, zoom: int | float = 12) -> None:
         '''
@@ -49,6 +49,30 @@ class GoogleMapsEngine(BaseEngine, AbstractEngine):
         self.url = self.BASE_URL.format(
             query=self.search_query, coords=','.join(self.coords), zoom=self.zoom
         )
+
+    def _parse_data_with_soup(self, html: str) -> list[str]:
+        '''
+        `html: str` - html representation of the page to parse
+
+        Returns `list[str]` typed parsed data - `[title, addr, phone, website]`
+        '''
+        soup = BeautifulSoup(html, 'html.parser')
+        data = []
+
+        title = soup.select_one('.DUwDvf.lfPIob').get_text()
+        data.append(title)
+
+        addr_img_src = '//www.gstatic.com/images/icons/material/system_gm/2x/place_gm_blue_24dp.png'
+        phone_img_src = '//www.gstatic.com/images/icons/material/system_gm/2x/phone_gm_blue_24dp.png'
+        website_img_src = '//www.gstatic.com/images/icons/material/system_gm/2x/public_gm_blue_24dp.png'
+
+        for img_src in (addr_img_src, phone_img_src, website_img_src):
+            img_element = soup.select_one(f'img[src="{img_src}"]')
+            info = img_element.parent.parent.parent.select_one('.Io6YTe').get_text() \
+                if img_element else '-'
+            data.append(info)
+
+        return data
 
     async def _get_search_results_urls(self) -> list[str]:
         '''
@@ -110,47 +134,3 @@ class GoogleMapsEngine(BaseEngine, AbstractEngine):
 
         urls = await scrape_urls()
         return urls
-
-    async def _get_search_results_entries(self, urls: list[str]) -> list[dict]:
-        '''
-        `urls: list[str]` - list of urls for google maps entities to scrape for
-
-        Goes over each url in the list and retreives data from opening page one by one
-
-        Searches for data using exact image source values selectors, no other unique way to extract data using selectors is not found yet
-
-        Returns `list[dict]` typed search result entries for each seperate given url from `urls`
-        '''
-        def parse_data_with_soup(html: str) -> list[str]:
-            '''
-            `html: str` - html representation of the page to parse
-
-            Returns `list[dict]` typed parsed data - `[title, addr, phone, website]`
-            '''
-            soup = BeautifulSoup(html, 'html.parser')
-            data = []
-
-            title = soup.select_one('.DUwDvf.lfPIob').get_text()
-            data.append(title)
-
-            addr_img_src = '//www.gstatic.com/images/icons/material/system_gm/2x/place_gm_blue_24dp.png'
-            phone_img_src = '//www.gstatic.com/images/icons/material/system_gm/2x/phone_gm_blue_24dp.png'
-            website_img_src = '//www.gstatic.com/images/icons/material/system_gm/2x/public_gm_blue_24dp.png'
-
-            for img_src in (addr_img_src, phone_img_src, website_img_src):
-                img_element = soup.select_one(f'img[src="{img_src}"]')
-                info = img_element.parent.parent.parent.select_one('.Io6YTe').get_text() \
-                    if img_element else '-'
-                data.append(info)
-
-            return data
-
-        entries = []
-        for url in urls:
-            await self._open_url_and_wait(url, 1.5)
-            html = await self.page.content()
-            data = parse_data_with_soup(html)
-            entry = dict(zip(self.FIELD_NAMES, data))
-            entries.append(entry)
-
-        return entries
