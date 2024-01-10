@@ -3,6 +3,10 @@ import os.path
 
 
 class CsvWriter:
+    '''
+    CSW Writer class to create and append data to a csv file with fieldnames
+    '''
+    
     def __init__(self, filename: str, fieldnames: list[str]) -> None:
         '''
         `filename: str` - file name or file path to create, e.g., `'leads.csv'`
