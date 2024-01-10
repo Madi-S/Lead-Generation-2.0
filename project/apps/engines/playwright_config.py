@@ -11,6 +11,7 @@ class PlaywrightEngineConfig:
 
     [EDITABLE] `PAGE_PARAMS` - browser page parameters configuration from playwright, additional parameters can be set if needed
     '''
+
     BROWSER_PARAMS = {'headless': False, 'proxy': None, 'slow_mo': 150}
     PAGE_PARAMS = {'java_script_enabled': True, 'bypass_csp': True}
 

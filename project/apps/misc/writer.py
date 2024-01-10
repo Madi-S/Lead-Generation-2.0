@@ -10,6 +10,7 @@ class CsvWriter:
 
         Creates a new file or skip if file with such name already exists
         '''
+
         self.filename = filename
         self.fieldnames = fieldnames
 
@@ -27,7 +28,7 @@ class CsvWriter:
     def append(self, data: list[dict]) -> None:
         '''
         `data: list[dict]` - data to write, keys of this dictionary should match fieldnames
-        
+
         Appends incoming `data` to the csv file
         '''
         with open(self.filename, 'a', encoding='utf-8', newline='') as f:

@@ -11,9 +11,9 @@ class GoogleMapsEngine(BaseEngine, AbstractEngine):
     '''
     `GoogleMapsEngine`
 
-    [EDITABLE] `SCROLL_TIME_DURATION_S` - scroll time duration to view the search results, preferably should be not less than 100, for testing purposes can be decreased
+    [EDITABLE] `SCROLL_TIME_DURATION_S` - scroll time duration to view the search results, preferably should be not less than 150, for testing purposes can be decreased
 
-    [EDITABLE] `SLEEP_PER_SCROLL_S` - amount of seconds to wait before each scroll of search results so that google maps does not output endless loading ~ aka simulate human-like activity
+    [EDITABLE] `SLEEP_PER_SCROLL_S` - amount of seconds to wait before each scroll of search results so that google maps does not output endless loading ~ aka simulate human-like activity, preferable should be not less than 5
 
     Usage:
 
@@ -24,13 +24,14 @@ class GoogleMapsEngine(BaseEngine, AbstractEngine):
     `await engine.save_to_csv()`
 
     `print(engine.entries)`
-
     '''
+
     BASE_URL = 'https://www.google.com/maps/search/{query}/@{coords},{zoom}z/data=!3m1!4b1?entry=ttu'
     FIELD_NAMES = ['Title', 'Address', 'PhoneNumber', 'WebsiteURL']
+    FILENAME = 'google_maps_leads.csv'
 
     SLEEP_PER_SCROLL_S = 5
-    SCROLL_TIME_DURATION_S = 300
+    SCROLL_TIME_DURATION_S = 50
 
     def __init__(self, query: str, location: str, zoom: int | float = 12) -> None:
         '''
@@ -49,30 +50,6 @@ class GoogleMapsEngine(BaseEngine, AbstractEngine):
         self.url = self.BASE_URL.format(
             query=self.search_query, coords=','.join(self.coords), zoom=self.zoom
         )
-
-    def _parse_data_with_soup(self, html: str) -> list[str]:
-        '''
-        `html: str` - html representation of the page to parse
-
-        Returns `list[str]` typed parsed data - `[title, addr, phone, website]`
-        '''
-        soup = BeautifulSoup(html, 'html.parser')
-        data = []
-
-        title = soup.select_one('.DUwDvf.lfPIob').get_text()
-        data.append(title)
-
-        addr_img_src = '//www.gstatic.com/images/icons/material/system_gm/2x/place_gm_blue_24dp.png'
-        phone_img_src = '//www.gstatic.com/images/icons/material/system_gm/2x/phone_gm_blue_24dp.png'
-        website_img_src = '//www.gstatic.com/images/icons/material/system_gm/2x/public_gm_blue_24dp.png'
-
-        for img_src in (addr_img_src, phone_img_src, website_img_src):
-            img_element = soup.select_one(f'img[src="{img_src}"]')
-            info = img_element.parent.parent.parent.select_one('.Io6YTe').get_text() \
-                if img_element else '-'
-            data.append(info)
-
-        return data
 
     async def _get_search_results_urls(self) -> list[str]:
         '''
@@ -134,3 +111,27 @@ class GoogleMapsEngine(BaseEngine, AbstractEngine):
 
         urls = await scrape_urls()
         return urls
+
+    def _parse_data_with_soup(self, html: str) -> list[str]:
+        '''
+        `html: str` - html representation of the page to parse
+
+        Returns `list[str]` typed parsed data - `[title, addr, phone, website]`
+        '''
+        soup = BeautifulSoup(html, 'html.parser')
+        data = []
+
+        title = soup.select_one('.DUwDvf.lfPIob').get_text()
+        data.append(title)
+
+        addr_img_src = '//www.gstatic.com/images/icons/material/system_gm/2x/place_gm_blue_24dp.png'
+        phone_img_src = '//www.gstatic.com/images/icons/material/system_gm/2x/phone_gm_blue_24dp.png'
+        website_img_src = '//www.gstatic.com/images/icons/material/system_gm/2x/public_gm_blue_24dp.png'
+
+        for img_src in (addr_img_src, phone_img_src, website_img_src):
+            img_element = soup.select_one(f'img[src="{img_src}"]')
+            info = img_element.parent.parent.parent.select_one('.Io6YTe').get_text() \
+                if img_element else '-'
+            data.append(info)
+
+        return data

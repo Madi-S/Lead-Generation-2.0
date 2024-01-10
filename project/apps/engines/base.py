@@ -11,6 +11,7 @@ class BaseEngine(PlaywrightEngineConfig):
 
     Base engine class expressing methods, which are shared between all engines, does not provide implementation of `AbstractEngine` methods
     '''
+
     async def run(self) -> None:
         '''
         Uses headles webdriver powered by Playwright
@@ -31,21 +32,19 @@ class BaseEngine(PlaywrightEngineConfig):
             self._entries: list[dict] = await self._get_search_results_entries(urls)
             await self.browser.close()
 
-    def save_to_csv(self, filename: str = 'google_maps_leads.csv') -> None:
+    def save_to_csv(self) -> None:
         '''
-        `filename: str='google_maps_leads.csv'` filename to save entries in, must be .csv filename
-
         If file with such name already exists, it will not overwrite it but append newly found entries to existing ones
 
         If file with such name does not exist, it will create a new csv file with predetermined fieldnames
         '''
-        if not filename.endswith('.csv'):
+        if not self.FILENAME.endswith('.csv'):
             raise ValueError('Use .csv file extension')
         if not self._entries:
             raise NotImplementedError(
                 'Entries are empty, call .run() method first to save them'
             )
-        csv_writer = CsvWriter(filename, self.FIELD_NAMES)
+        csv_writer = CsvWriter(self.FILENAME, self.FIELD_NAMES)
         csv_writer.append(self._entries)
 
     @property
