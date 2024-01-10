@@ -21,8 +21,12 @@ class AbstractEngine(ABC):
         '''
         pass
 
-    async def _get_search_results_entries(self, urls: list[str], *args, **kwargs) -> list[dict]:
+    def _parse_data_with_soup(self, html):
         '''
-        Retreiving search results data entries method from urls
+        `html: str` - html representation of the page to parse
+
+        Should be defined in child class
+
+        Returns `list[dict]` typed parsed data - `[title, addr, phone, website]`
         '''
         pass
