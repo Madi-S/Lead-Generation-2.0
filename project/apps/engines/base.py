@@ -77,3 +77,23 @@ class BaseEngine(PlaywrightEngineConfig):
         '''
         await self.page.goto(url)
         await asyncio.sleep(sleep_duration_s)
+
+    async def _get_search_results_entries(self, urls: list[str]) -> list[dict]:
+        '''
+        `urls: list[str]` - list of urls for google maps entities to scrape for
+
+        Goes over each url in the list and retreives data from opening page one by one
+
+        Searches for data using exact image source values selectors, no other unique way to extract data using selectors is not found yet
+
+        Returns `list[dict]` typed search result entries for each seperate given url from `urls`
+        '''
+        entries = []
+        for url in urls:
+            await self._open_url_and_wait(url, 1.5)
+            html = await self.page.content()
+            data = self._parse_data_with_soup(html)
+            entry = dict(zip(self.FIELD_NAMES, data))
+            entries.append(entry)
+
+        return entries
