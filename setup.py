@@ -15,7 +15,7 @@ setup(
     description='Lead generation scripts',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/Madi-S/Lead-Generation-2.0',
+    url='https://github.com/Madi-S/Lead-Generation',
     packages=find_packages(),
     install_requires=['playwright', 'beautifulsoup4', 'geopy'],
     python_requires='>=3.10',
