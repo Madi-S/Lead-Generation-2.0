@@ -2,8 +2,8 @@ import time
 import asyncio
 from bs4 import BeautifulSoup
 
-from apps.engines.base import BaseEngine
-from apps.engines.abstract import AbstractEngine
+from py_lead_generation.src.engines.base import BaseEngine
+from py_lead_generation.src.engines.abstract import AbstractEngine
 
 
 class YelpEngine(BaseEngine, AbstractEngine):

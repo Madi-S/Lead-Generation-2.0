@@ -1,32 +1,30 @@
 from setuptools import setup, find_packages
-import codecs
-import os
 
 
-here = os.path.abspath(os.path.dirname(__file__))
+with open('README.md', 'r') as f:
+    long_description = f.read()
 
-with codecs.open(os.path.join(here, 'README.md'), encoding='utf-8') as fh:
-    long_description = '\n' + fh.read()
-
-VERSION = '0.2.2'
-DESCRIPTION = 'Lead generation scripts'
+VERSION = '0.3.0'
 
 setup(
     name='py_lead_generation',
     version=VERSION,
+    license = 'MIT',
     author='Madi-S (Madi Shaiken)',
     author_email='<khovansky99@gmail.com>',
-    description=DESCRIPTION,
-    long_description_content_type='text/markdown',
+    description='Lead generation scripts',
     long_description=long_description,
+    long_description_content_type='text/markdown',
+    url='https://github.com/Madi-S/Lead-Generation-2.0',
     packages=find_packages(),
     install_requires=['playwright', 'beautifulsoup4', 'geopy'],
+    python_requires='>=3.10',
     keywords=['python', 'lead generation', 'web automation',
               'playwright', 'google maps', 'yelp'],
     classifiers=[
         'Development Status :: 1 - Planning',
         'Intended Audience :: Developers',
-        'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.10',
         'Operating System :: Unix',
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: Microsoft :: Windows',

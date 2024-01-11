@@ -1,7 +1,5 @@
 import asyncio
-
-from apps.yelp.engine import YelpEngine
-from apps.google_maps.engine import GoogleMapsEngine
+from py_lead_generation import GoogleMapsEngine, YelpEngine
 
 
 async def main() -> None:
@@ -16,7 +14,7 @@ async def main() -> None:
 
     engine = YelpEngine('Pizza', 'Mexico, Pampanga, Philippines')
     await engine.run()
-    engine.save_to_csv()
+    engine.save_to_csv('pizza_leads.csv')
 
 if __name__ == '__main__':
     asyncio.run(main())

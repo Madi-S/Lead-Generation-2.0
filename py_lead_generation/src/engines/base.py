@@ -1,8 +1,8 @@
 import asyncio
 from playwright.async_api import Playwright, async_playwright
 
-from apps.misc.writer import CsvWriter
-from apps.engines.playwright_config import PlaywrightEngineConfig
+from py_lead_generation.src.misc.writer import CsvWriter
+from py_lead_generation.src.engines.playwright_config import PlaywrightEngineConfig
 
 
 class BaseEngine(PlaywrightEngineConfig):
@@ -32,12 +32,17 @@ class BaseEngine(PlaywrightEngineConfig):
             self._entries: list[dict] = await self._get_search_results_entries(urls)
             await self.browser.close()
 
-    def save_to_csv(self) -> None:
+    def save_to_csv(self, filename: str = None) -> None:
         '''
+        `filename: str = None` - optional parameter, by default uses `self.FILENAME`
+        
         If file with such name already exists, it will not overwrite it but append newly found entries to existing ones
 
         If file with such name does not exist, it will create a new csv file with predetermined fieldnames
         '''
+        if filename:
+            self.FILENAME = filename
+
         if not self.FILENAME.endswith('.csv'):
             raise ValueError('Use .csv file extension')
         if not self._entries:

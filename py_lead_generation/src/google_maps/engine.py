@@ -2,9 +2,9 @@ import time
 import asyncio
 from bs4 import BeautifulSoup
 
-from apps.engines.base import BaseEngine
-from apps.engines.abstract import AbstractEngine
-from apps.misc.utils import get_coords_by_location
+from py_lead_generation.src.engines.base import BaseEngine
+from py_lead_generation.src.engines.abstract import AbstractEngine
+from py_lead_generation.src.misc.utils import get_coords_by_location
 
 
 class GoogleMapsEngine(BaseEngine, AbstractEngine):
@@ -31,7 +31,7 @@ class GoogleMapsEngine(BaseEngine, AbstractEngine):
     FILENAME = 'google_maps_leads.csv'
 
     SLEEP_PER_SCROLL_S = 5
-    SCROLL_TIME_DURATION_S = 50
+    SCROLL_TIME_DURATION_S = 200
 
     def __init__(self, query: str, location: str, zoom: int | float = 12) -> None:
         '''
